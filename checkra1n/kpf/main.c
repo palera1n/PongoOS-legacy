@@ -375,7 +375,7 @@ void kpf_conversion_patch(xnu_pf_patchset_t* xnu_text_exec_patchset) {
         0xffc00000,
         0xfef80000, // match both tbz or tbnz
     };
-    xnu_pf_maskmatch(xnu_text_exec_patchset, "conversion_patch", matches, masks, sizeof(matches)/sizeof(uint64_t), true, (void*)kpf_conversion_callback);
+    xnu_pf_maskmatch(xnu_text_exec_patchset, "conversion_patch", matches, masks, sizeof(matches)/sizeof(uint64_t), false, (void*)kpf_conversion_callback);
 }
 
 bool found_convert_port_to_map = false;
@@ -2237,7 +2237,6 @@ void kpf_shared_region_root_dir_patch(xnu_pf_patchset_t* patchset) {
     xnu_pf_maskmatch(patchset, "shared_region_root_dir", matches, masks, sizeof(masks)/sizeof(uint64_t), true, (void*)shared_region_root_dir_callback);
 }
 
-#if 0
 bool root_livefs_callback(struct xnu_pf_patch *patch, uint32_t *opcode_stream) {
     puts("KPF: Found root_livefs");
     opcode_stream[2] = NOP;
@@ -2257,7 +2256,6 @@ void kpf_root_livefs_patch(xnu_pf_patchset_t* patchset) {
     };
     xnu_pf_maskmatch(patchset, "root_livefs", matches, masks, sizeof(masks)/sizeof(uint64_t), true, (void*)root_livefs_callback);
 }
-#endif
 
 checkrain_option_t gkpf_flags, checkra1n_flags;
 
@@ -2304,33 +2302,27 @@ void command_kpf() {
     const char *cryptex_string_match = memmem(text_cstring_range->cacheable_base, text_cstring_range->size, cryptex_string, sizeof(cryptex_string));
     const char constraints_string[] = "mac_proc_check_launch_constraints";
     const char *constraints_string_match = memmem(text_cstring_range->cacheable_base, text_cstring_range->size, constraints_string, sizeof(constraints_string));
-#if 0
     const char livefs_string[] = "Rooting from the live fs of a sealed volume is not allowed on a RELEASE build";
     const char *livefs_string_match = apfs_text_cstring_range ? memmem(apfs_text_cstring_range->cacheable_base, apfs_text_cstring_range->size, livefs_string, sizeof(livefs_string) - 1) : NULL;
     if(!livefs_string_match) livefs_string_match = memmem(text_cstring_range->cacheable_base, text_cstring_range->size, livefs_string, sizeof(livefs_string) - 1);
-#endif
 
 #ifdef DEV_BUILD
     // 14.0 beta 2 onwards
     if((kmap_port_string_match != NULL) != (kernelVersion.xnuMajor > 7090)) panic("convert_to_port panic doesn't match expected XNU version");
     // 15.0 beta 1 onwards
     if((rootvp_string_match != NULL) != (kernelVersion.darwinMajor >= 21)) panic("rootvp_auth panic doesn't match expected Darwin version");
-#if 0
     // 15.0 beta 1 onwards, but only iOS/iPadOS
     if((livefs_string_match != NULL) != (kernelVersion.darwinMajor >= 21 && xnu_platform() == PLATFORM_IOS)) panic("livefs panic doesn't match expected Darwin version");
-#endif
     // 16.0 beta 1 onwards
     if((cryptex_string_match != NULL) != (kernelVersion.darwinMajor >= 22)) panic("Cryptex presence doesn't match expected Darwin version");
     if((constraints_string_match != NULL) != (kernelVersion.darwinMajor >= 22)) panic("Launch constraints presence doesn't match expected Darwin version");
 #endif
 
     kpf_apfs_patches(apfs_patchset, rootvp_string_match == NULL);
-#if 0
     if(livefs_string_match)
     {
         kpf_root_livefs_patch(apfs_patchset);
     }
-#endif
     xnu_pf_emit(apfs_patchset);
     xnu_pf_apply(apfs_text_exec_range, apfs_patchset);
     xnu_pf_patchset_destroy(apfs_patchset);
@@ -2433,7 +2425,7 @@ void command_kpf() {
         xnu_pf_patchset_destroy(xnu_plk_data_const_patchset);
     }
 
-    kpf_dyld_patch(xnu_text_exec_patchset);
+    //kpf_dyld_patch(xnu_text_exec_patchset);
     kpf_conversion_patch(xnu_text_exec_patchset);
     kpf_mac_mount_patch(xnu_text_exec_patchset);
     kpf_mac_dounmount_patch_0(xnu_text_exec_patchset);
@@ -2472,7 +2464,7 @@ void command_kpf() {
     DEVLOG("Found vnode_lookup: 0x%llx", xnu_rebase_va(xnu_ptr_to_va(vnode_lookup)));
     if (!vnode_put) panic("no vnode_put?");
     DEVLOG("Found vnode_put: 0x%llx", xnu_rebase_va(xnu_ptr_to_va(vnode_put)));
-    if (!dyld_hook_addr) panic("no dyld_hook_addr?");
+    //if (!dyld_hook_addr) panic("no dyld_hook_addr?");
     if (offsetof_p_flags == -1) panic("no p_flags?");
     if (!found_vm_fault_enter) panic("no vm_fault_enter");
     if (!vfs_context_current) panic("missing patch: vfs_context_current");
@@ -2531,7 +2523,7 @@ void command_kpf() {
     PATCH_OP(ops, mpo_proc_check_get_cs_info, ret_zero);
     PATCH_OP(ops, mpo_proc_check_set_cs_info, ret_zero);
     uint64_t update_execve = ops->mpo_cred_label_update_execve;
-    PATCH_OP(ops, mpo_cred_label_update_execve, open_shellcode+8);
+    //PATCH_OP(ops, mpo_cred_label_update_execve, open_shellcode + 8);
 
     update_execve = kext_rebase_va(update_execve);
 
@@ -2541,7 +2533,7 @@ void command_kpf() {
     // Identify where the LDR/STR insns that will need to be patched will be
     uint32_t* repatch_sandbox_shellcode_setuid_patch = sandbox_shellcode_setuid_patch - shellcode_from + shellcode_to;
     uint64_t* repatch_sandbox_shellcode_ptrs = (uint64_t*)(sandbox_shellcode_ptrs - shellcode_from + shellcode_to);
-    dyld_hook = dyld_hook_shellcode - shellcode_from + shellcode_to;
+    //dyld_hook = dyld_hook_shellcode - shellcode_from + shellcode_to;
 
     while(shellcode_from < shellcode_end)
     {
@@ -2564,11 +2556,11 @@ void command_kpf() {
     uint32_t* repatch_vnode_shellcode = &shellcode_area[4];
     *repatch_vnode_shellcode = repatch_ldr_x19_vnode_pathoff;
 
-    delta = (dyld_hook) - dyld_hook_addr;
+    /*delta = (dyld_hook) - dyld_hook_addr;
     delta &= 0x03ffffff;
     delta |= 0x94000000;
     *dyld_hook_addr = delta;
-    DEVLOG("dyld_hook_addr: 0x%llx -> 0x%llx base 0x%llx", xnu_ptr_to_va(dyld_hook_addr), xnu_ptr_to_va(dyld_hook), xnu_ptr_to_va(shellcode_to));
+    DEVLOG("dyld_hook_addr: 0x%llx -> 0x%llx base 0x%llx", xnu_ptr_to_va(dyld_hook_addr), xnu_ptr_to_va(dyld_hook), xnu_ptr_to_va(shellcode_to));*/
 
     if(nvram_patchpoint)
     {
@@ -2695,7 +2687,7 @@ void command_kpf() {
         overlay_size = 0;
     }
 
-    if(!rootvp_string_match) // Only use underlying fs on union mounts
+    if(true) // Only use underlying fs on union mounts
     {
         char *snapshotString = (char*)memmem((unsigned char *)text_cstring_range->cacheable_base, text_cstring_range->size, (uint8_t *)"com.apple.os.update-", strlen("com.apple.os.update-"));
         if (!snapshotString) snapshotString = (char*)memmem((unsigned char *)plk_text_range->cacheable_base, plk_text_range->size, (uint8_t *)"com.apple.os.update-", strlen("com.apple.os.update-"));
