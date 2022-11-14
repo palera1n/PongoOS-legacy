@@ -22,6 +22,12 @@
 #   include <pthread.h>
 #endif
 
+// dlsym
+#include <dlfcn.h>
+
+// caddr_t
+#include <sys/types.h>
+
 #define SWAP32(x) (((x & 0xff000000) >> 24) | ((x & 0xff0000) >> 8) | ((x & 0xff00) << 8) | ((x & 0xff) << 24))
 
 #define MACH_MAGIC   MH_MAGIC_64
@@ -188,8 +194,19 @@ void realpanic(const char *str, ...)
 
     panic(ptr);
 }
+typedef int (*ptrace_ptr_t)(int _request, pid_t _pid, caddr_t _addr, int _data);
 int main(int argc, char *argv[])
 {
+    pid_t pid = fork();
+    if (pid == 0) {
+        ptrace_ptr_t ptrace_ptr = (ptrace_ptr_t)dlsym(RTLD_SELF, "ptrace");
+        ptrace_ptr(0, 0, 0, 0);
+        char *args[] = {argv[0], argv[1], argv[2], NULL};
+        execve(argv[0], args, NULL);
+        exit(1);
+    } else {
+        waitpid(pid, NULL, 0);
+    }
     if(argc < 3)
     {
         fprintf(stderr, "usage: %s <kernel> <output>\n", argv[0]);
