@@ -160,7 +160,7 @@ extern uint32_t sandbox_shellcode[], sandbox_shellcode_setuid_patch[], dyld_hook
 extern uint32_t nvram_shc[], nvram_shc_end[];
 extern uint32_t kdi_shc[], kdi_shc_orig[], kdi_shc_get[], kdi_shc_addr[], kdi_shc_size[], kdi_shc_new[], kdi_shc_set[], kdi_shc_end[];
 extern uint32_t fsctl_shc[], fsctl_shc_vnode_open[], fsctl_shc_stolen_slowpath[], fsctl_shc_orig_bl[], fsctl_shc_vnode_close[], fsctl_shc_stolen_fastpath[], fsctl_shc_orig_b[], fsctl_shc_end[];
-
+extern uint32_t sb_vfs_bl[], sb_vnode_bl[], sb_orig_b[];
 #ifdef DEV_BUILD
 struct {
     int darwinMajor;
@@ -2523,7 +2523,7 @@ void command_kpf() {
     PATCH_OP(ops, mpo_proc_check_get_cs_info, ret_zero);
     PATCH_OP(ops, mpo_proc_check_set_cs_info, ret_zero);
     uint64_t update_execve = ops->mpo_cred_label_update_execve;
-    //PATCH_OP(ops, mpo_cred_label_update_execve, open_shellcode + 8);
+    PATCH_OP(ops, mpo_cred_label_update_execve, open_shellcode + 8);
 
     update_execve = kext_rebase_va(update_execve);
 
@@ -2561,6 +2561,34 @@ void command_kpf() {
     delta |= 0x94000000;
     *dyld_hook_addr = delta;
     DEVLOG("dyld_hook_addr: 0x%llx -> 0x%llx base 0x%llx", xnu_ptr_to_va(dyld_hook_addr), xnu_ptr_to_va(dyld_hook), xnu_ptr_to_va(shellcode_to));*/
+
+    // ldr x16, xxx -> BL xxx
+    // blr          -> NOP
+    
+    uint64_t vnode_gaddr_addr = xnu_ptr_to_va(vnode_gaddr);
+    uint64_t vfs_context_current_addr = xnu_ptr_to_va(vfs_context_current);
+    uint64_t vnode_lookup_addr = xnu_ptr_to_va(vnode_lookup);
+    uint64_t vnode_put_addr = xnu_ptr_to_va(vnode_put);
+    
+    uint32_t* sb_vfs_off = sb_vfs_bl - shellcode_from + shellcode_to;
+    uint32_t* sb_vnode_off = sb_vnode_bl - shellcode_from + shellcode_to;
+    uint32_t* sb_orig_off = sb_orig_b - shellcode_from + shellcode_to;
+    
+    int64_t sb_vfs_delta   = vfs_context_current_addr - xnu_ptr_to_va(sb_vfs_off);
+    int64_t sb_vnode_delta = vnode_gaddr_addr - xnu_ptr_to_va(sb_vnode_off);
+    int64_t sb_orig_delta  = update_execve - xnu_ptr_to_va(sb_orig_off);
+    
+    sb_vfs_off[0] = 0x94000000 | (((uint64_t)sb_vfs_delta >> 2) & 0x3ffffff);
+    sb_vfs_off[1] = NOP;
+    DEVLOG("%llx: BL %016llx : 0x%08x", xnu_ptr_to_va(sb_vfs_off), vfs_context_current_addr, sb_vfs_off[0]);
+    
+    sb_vnode_off[0] = 0x94000000 | (((uint64_t)sb_vnode_delta >> 2) & 0x3ffffff);
+    sb_vnode_off[1] = NOP;
+    DEVLOG("%llx: BL %016llx : 0x%08x", xnu_ptr_to_va(sb_vnode_off), vnode_gaddr_addr, sb_vnode_off[0]);
+    
+    sb_orig_off[0] = 0x14000000 | (((uint64_t)sb_orig_delta >> 2) & 0x3ffffff);
+    sb_orig_off[1] = NOP;
+    DEVLOG("%llx: B  %016llx : 0x%08x", xnu_ptr_to_va(sb_orig_off), update_execve, sb_orig_off[0]);
 
     if(nvram_patchpoint)
     {
