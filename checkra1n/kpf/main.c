@@ -1457,6 +1457,23 @@ bool kpf_apfs_patches_mount(struct xnu_pf_patch* patch, uint32_t* opcode_stream)
     *f_apfs_privcheck = 0xeb00001f; // cmp x0, x0
     return true;
 }
++/* Start GPL-2.0 code */
+bool kpf_apfs_rootauth(struct xnu_pf_patch *patch, uint32_t *opcode_stream)
+{
+    opcode_stream[0] = NOP;
+    opcode_stream[1] = 0x52800000; /* mov w0, 0 */
+
+    puts("KPF: found handle_eval_rootauth");
+    return true;
+}
+
+bool kpf_apfs_vfsop_mount(struct xnu_pf_patch *patch, uint32_t *opcode_stream)
+{
+    opcode_stream[0] = 0x52800000; /* mov w0, 0 */
+    puts("KPF: found apfs_vfsop_mount");
+    return true;
+}
+/* End GPL-2.0 code */
 void kpf_apfs_patches(xnu_pf_patchset_t* patchset, bool have_union) {
     // there is a check in the apfs mount function that makes sure that the kernel task is calling this function (current_task() == kernel_task)
     // we also want to call it so we patch that check out
@@ -1515,6 +1532,38 @@ void kpf_apfs_patches(xnu_pf_patchset_t* patchset, bool have_union) {
         };
         xnu_pf_maskmatch(patchset, "apfs_patch_rename", i_matches, i_masks, sizeof(i_matches)/sizeof(uint64_t), true, (void*)kpf_apfs_patches_rename);
     }
+    /* Start GPL-2.0 code */
+    uint64_t rootauth_matches[] = {
+        0x37280068, // tbnz w8, 5, 0xc
+        0x52800a00, // mov w0, 0x50
+        0xd65f03c0  // ret
+    };
+    uint64_t rootauth_masks[] = {
+        0xffffffff,
+        0xffffffff,
+        0xffffffff
+    };
+    uint64_t remount_matches2[] = {
+        0x37700000, // tbnz w0, 0xe, *
+        0xb94003a0, // ldr x*, [x29/sp, *]
+        0x121f7800, // and w*, w*, 0xfffffffe
+        0xb90003a0, // str x*, [x29/sp, *]
+    };
+
+    uint64_t remount_masks2[] = {
+        0xfff8001f,
+        0xfffe03a0,
+        0xfffffc00,
+        0xffc003a0,
+    };
+    xnu_pf_maskmatch(patchset, "handle_eval_rootauth", rootauth_matches, rootauth_masks,
+                     sizeof(rootauth_masks) / sizeof(uint64_t), true,
+                     (void *)kpf_apfs_rootauth);
+
+    xnu_pf_maskmatch(patchset, "apfs_vfsop_mount", remount_matches2, remount_masks2,
+                     sizeof(remount_masks2) / sizeof(uint64_t), true,
+                     (void *)kpf_apfs_vfsop_mount);
+    /* End GPL-2.0 code */
 }
 static uint32_t* amfi_ret;
 bool kpf_amfi_execve_tail(struct xnu_pf_patch* patch, uint32_t* opcode_stream) {
@@ -2256,6 +2305,8 @@ void kpf_root_livefs_patch(xnu_pf_patchset_t* patchset) {
     };
     xnu_pf_maskmatch(patchset, "root_livefs", matches, masks, sizeof(masks)/sizeof(uint64_t), true, (void*)root_livefs_callback);
 }
+
+
 
 checkrain_option_t gkpf_flags, checkra1n_flags;
 
