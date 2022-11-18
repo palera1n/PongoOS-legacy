@@ -1457,7 +1457,7 @@ bool kpf_apfs_patches_mount(struct xnu_pf_patch* patch, uint32_t* opcode_stream)
     *f_apfs_privcheck = 0xeb00001f; // cmp x0, x0
     return true;
 }
-+/* Start GPL-2.0 code */
+/* Start GPL-2.0 code */
 bool kpf_apfs_rootauth(struct xnu_pf_patch *patch, uint32_t *opcode_stream)
 {
     opcode_stream[0] = NOP;
