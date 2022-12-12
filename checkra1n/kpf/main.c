@@ -2259,6 +2259,7 @@ void kpf_shared_region_root_dir_patch(xnu_pf_patchset_t* patchset) {
     xnu_pf_maskmatch(patchset, "shared_region_root_dir", matches, masks, sizeof(masks)/sizeof(uint64_t), true, (void*)shared_region_root_dir_callback);
 }
 
+#ifdef ROOT_LIVEFS_ENABLED
 bool root_livefs_callback(struct xnu_pf_patch *patch, uint32_t *opcode_stream) {
     puts("KPF: Found root_livefs");
     opcode_stream[2] = NOP;
@@ -2278,6 +2279,7 @@ void kpf_root_livefs_patch(xnu_pf_patchset_t* patchset) {
     };
     xnu_pf_maskmatch(patchset, "root_livefs", matches, masks, sizeof(masks)/sizeof(uint64_t), true, (void*)root_livefs_callback);
 }
+#endif
 
 checkrain_option_t gkpf_flags, checkra1n_flags;
 
@@ -2341,10 +2343,12 @@ void command_kpf() {
 #endif
 
     kpf_apfs_patches(apfs_patchset, rootvp_string_match == NULL);
+    #ifdef ROOT_LIVEFS_ENABLED
     if(livefs_string_match)
     {
         kpf_root_livefs_patch(apfs_patchset);
     }
+    #endif
     xnu_pf_emit(apfs_patchset);
     xnu_pf_apply(apfs_text_exec_range, apfs_patchset);
     xnu_pf_patchset_destroy(apfs_patchset);
