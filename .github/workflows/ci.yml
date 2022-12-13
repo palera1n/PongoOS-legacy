@@ -24,7 +24,7 @@ jobs:
             **
       - name: Install ldid
         run: |
-          sudo curl -sLO /usr/bin/ldid https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus5/ldid_macos_x86_64
+          sudo curl -sLo /usr/bin/ldid https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus5/ldid_macos_x86_64
       - name: Checkout repository
         if: steps.voodoo.outputs.cache-hit != 'true'
         uses: actions/checkout@v2
