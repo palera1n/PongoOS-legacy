@@ -1867,9 +1867,9 @@ void kpf_amfi_kext_patches(xnu_pf_patchset_t* patchset) {
         0xd65f03c0, // ret
     };
     uint64_t iiiii_masks[] = {
-        0x0fff0000,
-        0xff0000f0,
-        0xfffff0f0,
+        0x0000ff00,
+        0xf00000ff,
+        0xf0f0ffff,
         0xfff0ffff,
         0xffffffff,
     };
