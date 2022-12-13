@@ -1858,7 +1858,7 @@ void kpf_amfi_kext_patches(xnu_pf_patchset_t* patchset) {
     // 0xfffffff00766772c      c0035fd6       ret
     //
     // To find this with r2:
-    // /x 080000900801009108fddf0800010012c0035fd6:0f00ff0fff0f00ffffffffffffffffffffffffff
+    // /x 000000900000009100fcdf0800000012c0035fd6:0000ff0ff00000fff0f0fffffff0ffffffffffff
     uint64_t iiiii_matches[] = {
         0x90000000, // adrp x*, 0x*
         0x91000000, // add x*, x*, 0x*
@@ -1867,9 +1867,9 @@ void kpf_amfi_kext_patches(xnu_pf_patchset_t* patchset) {
         0xd65f03c0, // ret
     };
     uint64_t iiiii_masks[] = {
-        0x0fff0000,
+        0xbfff0000,
         0xff0000f0,
-        0xfffff0f0,
+        0xfffffef0,
         0xfffff0ff,
         0xffffffff,
     };
