@@ -1848,6 +1848,17 @@ void kpf_amfi_kext_patches(xnu_pf_patchset_t* patchset) {
     };
     xnu_pf_maskmatch(patchset, "amfi_mac_syscall_low", iiii_matches, iiii_masks, sizeof(iiii_matches)/sizeof(uint64_t), false, (void*)kpf_amfi_mac_syscall_low);
     
+    // This patch finds _developer_mode_state and make it always return 0, so developer mode is always on 
+    // Example from iOS 16.1.1 on an iPad 6'th generation
+    //
+    // 0xfffffff00766771c      881300d0       adrp x8, 0xfffffff0078d9000
+    // 0xfffffff007667720      08c12391       add x8, x8, 0x8f0
+    // 0xfffffff007667724      08fddf08       ldarb w8, [x8]
+    // 0xfffffff007667728      00010012       and w0, w8, 1
+    // 0xfffffff00766772c      c0035fd6       ret
+    //
+    // To find this with r2:
+    // /x 080000900801009108fddf0800010012c0035fd6:0f00ff0fff0f00ffffffffffffffffffffffffff
     uint64_t iiiii_matches[] = {
         0x90000008, // adrp x8, 0x*
         0x91000108, // add x8, x8, 0x*
