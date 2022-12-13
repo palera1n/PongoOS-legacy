@@ -19,13 +19,13 @@ CHECKRA1N_FLAGS         := -std=gnu17 -Wall -Wstrict-prototypes -O3 -flto -I$(IN
 ENABLE_ROOT_LIVEFS_FLAG := -DROOT_LIVEFS_ENABLED
 
 ifeq ($(HOST_OS),Darwin)
-	IOS_CC              ?= xcrun -sdk iphoneos clang --target=arm64-apple-ios7.0
+	IOS_CC              ?= xcrun -sdk iphoneos clang -target arm64-apple-ios7.0
 	MACOS_CC            ?= clang --target=arm64-apple-macos11.0
 	SIGN                ?= ldid -Sent.plist
 else
 ifeq ($(HOST_OS),Linux)
 # TODO: macOS target
-	IOS_CC              ?= arm64-apple-ios12.0.0-clang -arch arm64
+	IOS_CC              ?= clang -target arm64-apple-ios12.0.0 -arch arm64
 	SIGN                ?= ldid -Sent.plist
 endif
 endif
