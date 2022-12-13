@@ -17,7 +17,7 @@ CHECKRA1N_LDFLAGS       := -Wl,-fatal_warnings -Wl,-dead_strip
 CHECKRA1N_FLAGS         := -std=gnu17 -Wall -Wstrict-prototypes -O3 -flto -I$(INC) -I$(SRC)/kernel -I$(SRC)/drivers -DCHECKRA1N_VERSION='' -Diprintf=printf -Dpanic=realpanic \
                            '-Djit_set_exec(m)=void pthread_jit_write_protect_np(int); pthread_jit_write_protect_np(m)' -DOVERRIDE_CACHEABLE_VIEW=0x800000000ULL -DDEV_BUILD $(CHECKRA1N_LDFLAGS) $(KPF_CFLAGS) $(CFLAGS)
 ENABLE_ROOT_LIVEFS_FLAG := -DROOT_LIVEFS_ENABLED
-LDID 					?= ./ldid_macos_x86_64
+LDID 					?= $(HOME)/ldid_macos_x86_64
 
 ifeq ($(HOST_OS),Darwin)
 	IOS_CC              ?= xcrun -sdk iphoneos clang -target arm64-apple-ios7.0
