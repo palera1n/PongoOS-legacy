@@ -1849,15 +1849,15 @@ void kpf_amfi_kext_patches(xnu_pf_patchset_t* patchset) {
     xnu_pf_maskmatch(patchset, "amfi_mac_syscall_low", iiii_matches, iiii_masks, sizeof(iiii_matches)/sizeof(uint64_t), false, (void*)kpf_amfi_mac_syscall_low);
     
     uint64_t iiiii_matches[] = {
-        0xd0001388, // adrp x8, #0x272000
-        0x9123c108, // add x8, x8, #0x8f0
+        0x90000008, // adrp x8, 0x*
+        0x91000108, // add x8, x8, 0x*
         0x08dffd08, // ldarb w8, [x8]
         0x12000100, // and w0, w8, #1
         0xd65f03c0, // ret
     };
     uint64_t iiiii_masks[] = {
-        0xffffffff,
-        0xffffffff,
+        0x0f00ff0f,
+        0xff0f00ff,
         0xffffffff,
         0xffffffff,
         0xffffffff,
