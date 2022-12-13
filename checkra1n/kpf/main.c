@@ -1660,7 +1660,7 @@ bool kpf_amfi_mac_syscall_low(struct xnu_pf_patch *patch, uint32_t *opcode_strea
 }
 bool kpf_amfi_force_dev_mode(struct xnu_pf_patch *patch, uint32_t *opcode_stream) {
     //opcode_stream[2] = 0x20008052 + opcode_stream[2] - 0x00FDDF08; /* mov w*, #1 */
-    opcode_stream[1] = 0x20008052 + opcode_stream[2] - 0x00FDDF08; /* mov w*, #1 */
+    opcode_stream[0] = 0x20008052 + opcode_stream[2] - 0x00FDDF08; /* mov w*, #1 */
 
     puts("KPF: found developer_mode_state");
     return true;
@@ -1862,14 +1862,14 @@ void kpf_amfi_kext_patches(xnu_pf_patchset_t* patchset) {
     // /x 000000900000009100fcdf0800000012c0035fd6:0000ff0ff00000fff0f0fffffff0ffffffffffff
     uint64_t iiiii_matches[] = {
         //0x90000000, // adrp x*, 0x*
-        0x91000000, // add x*, x*, 0x*
+        //0x91000000, // add x*, x*, 0x*
         0x08dffc00, // ldarb w*, [x*]
         0x12000000, // and w0, w*, #1
         //0xd65f03c0, // ret
     };
     uint64_t iiiii_masks[] = {
         //0xbfff0000,
-        0xff0000f0,
+        //0xff0000f0,
         0xfffffef0,
         0xfffff0ff,
         //0xffffffff,
