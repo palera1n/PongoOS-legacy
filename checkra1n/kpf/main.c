@@ -1862,7 +1862,22 @@ void kpf_amfi_kext_patches(xnu_pf_patchset_t* patchset) {
         0xffffffff,
 //        0xffffffff,
     };
-    xnu_pf_maskmatch(patchset, "force_dev_mode", iiiii_matches, iiiii_masks, sizeof(iiiii_matches)/sizeof(uint64_t), true, (void*)kpf_amfi_force_dev_mode);
+    uint64_t iiiiii_matches[] = {
+        0xd0001388, // adrp x8, #0x272000
+        0x9123c108, // add x8, x8, #0x8f0
+        0x08dffd08, // ldarb w8, [x8]
+//        0x12000100, // and w0, w8, #1
+//        0xd65f03c0, // ret
+    };
+    uint64_t iiiiii_masks[] = {
+        0xffffffff,
+        0xffffffff,
+        0xffffffff,
+//        0xffffffff,
+//        0xffffffff,
+    };
+    xnu_pf_maskmatch(patchset, "force_dev_mode", iiiii_matches, iiiii_masks, sizeof(iiiii_matches)/sizeof(uint64_t), false, (void*)kpf_amfi_force_dev_mode);
+    xnu_pf_maskmatch(patchset, "force_dev_mode", iiiiii_matches, iiiiii_masks, sizeof(iiiiii_matches)/sizeof(uint64_t), false, (void*)kpf_amfi_force_dev_mode);
 }
 
 void kpf_sandbox_kext_patches(xnu_pf_patchset_t* patchset) {
