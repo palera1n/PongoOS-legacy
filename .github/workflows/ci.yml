@@ -11,17 +11,19 @@ jobs:
     steps:
       - name: Install ldid
         run: |
-          curl -sLo $HOME/ldid https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus5/ldid_macos_x86_64
-          chmod +x $HOME/ldid
+          sudo curl -sLo /usr/local/bin/ldid https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus5/ldid_macos_x86_64
+          sudo chmod +x /usr/local/bin/ldid
+          
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
           submodules: true
+          
       - name: Compile
         run: make all -C checkra1n/Kernel15Patcher
-      - name: Archive
+        
+      - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: KPF
-          path: |
-            checkra1n/Kernel15Patcher/Kernel15Patcher.ios
+          path: checkra1n/Kernel15Patcher/Kernel15Patcher.ios
