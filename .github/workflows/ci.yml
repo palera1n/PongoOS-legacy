@@ -19,11 +19,11 @@ jobs:
         with:
           submodules: true
           
-      - name: Compile
+      - name: Compile Kernel15Patcher
         run: make all -C checkra1n/Kernel15Patcher
         
-      - name: Upload artifact
+      - name: Upload Kernel15Patcher
         uses: actions/upload-artifact@v2
         with:
-          name: KPF
+          name: Kernel15Patcher
           path: checkra1n/Kernel15Patcher/Kernel15Patcher.ios
