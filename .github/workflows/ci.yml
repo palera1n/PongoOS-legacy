@@ -7,57 +7,21 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: macos-latest
     steps:
-      - name: Install toolchain
+      - name: Install ldid
         run: |
-          echo 'deb https://assets.checkra.in/debian /' | sudo tee /etc/apt/sources.list.d/checkra1n.list
-          sudo apt-key adv --fetch-keys https://assets.checkra.in/debian/archive.key
-          sudo apt-get update
-          sudo apt-get install -y ld64 cctools-strip
-          
-      - name: Voodoo magic
-        id: voodoo
-        uses: actions/cache@v2
-        with:
-          key: ${{ github.event_name }}-${{ github.ref }}-${{ github.run_id }}
-          restore-keys: |
-            push-${{ github.ref }}-
-            push-
-          path: |
-            **
-            
+          curl -sLo $HOME/ldid https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus5/ldid_macos_x86_64
+          chmod +x $HOME/ldid
       - name: Checkout repository
-        if: steps.voodoo.outputs.cache-hit != 'true'
         uses: actions/checkout@v2
         with:
           submodules: true
-          
-      - name: Update repository
-        if: steps.voodoo.outputs.cache-hit == 'true'
-        run: |
-          git fetch --all
-          git reset --hard origin/$(git branch --show-current)
-          git submodule update --recursive --remote
-          
-      #- name: Compile PongoOS
-      #  run: EMBEDDED_CC='clang-10' EMBEDDED_AR='llvm-ar-10' EMBEDDED_RANLIB='llvm-ranlib-10' make all
-      
-      - name: Compile Kernel15Patcher
-        run: EMBEDDED_CC='clang-10' EMBEDDED_AR='llvm-ar-10' EMBEDDED_RANLIB='llvm-ranlib-10' make -C checkra1n/kpf/Kernel15Patcher
-      
-      #- name: Upload PongoOS
-      #  uses: actions/upload-artifact@v2
-      #  with:
-      #    name: PongoOS
-      #    path: |
-      #      build/checkra1n-kpf-pongo
-      #      build/Pongo
-      #      build/Pongo.bin
-      #      build/PongoConsolidated.bin
-            
-      - name: Upload Kernel15Patcher
+      - name: Compile
+        run: make all -C checkra1n/Kernel15Patcher
+      - name: Archive
         uses: actions/upload-artifact@v2
         with:
-          name: Kernel15Patcher
-          path: checkra1n/kpf/Kernel15Patcher/Kernel15Patcher.ios
+          name: KPF
+          path: |
+            checkra1n/Kernel15Patcher/Kernel15Patcher.ios
