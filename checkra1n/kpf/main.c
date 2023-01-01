@@ -1859,7 +1859,7 @@ void kpf_amfi_kext_patches(xnu_pf_patchset_t* patchset) {
         0xffff000f,
         0xfffff0ff
     };
-    xnu_pf_maskmatch(patchset, "force_dev_mode", iiiii_matches, iiiii_masks, sizeof(iiiii_matches)/sizeof(uint64_t), true, (void*)kpf_amfi_force_dev_mode);
+    xnu_pf_maskmatch(patchset, "force_dev_mode", iiiii_matches, iiiii_masks, sizeof(iiiii_matches)/sizeof(uint64_t), false, (void*)kpf_amfi_force_dev_mode);
 }
 
 void kpf_sandbox_kext_patches(xnu_pf_patchset_t* patchset) {
