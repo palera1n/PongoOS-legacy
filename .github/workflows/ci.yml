@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Install ldid
         run: |
-          sudo curl -sLo /usr/local/bin/ldid https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macos_x86_64
+          sudo curl -sLo /usr/local/bin/ldid https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_x86_64
           sudo chmod +x /usr/local/bin/ldid
           
       - name: Checkout repository
