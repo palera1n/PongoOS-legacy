@@ -1741,7 +1741,7 @@ bool kpf_apfs_vfsop_mount(struct xnu_pf_patch *patch, uint32_t *opcode_stream)
     return true;
 }
 /* End GPL-2.0 code */
-void kpf_apfs_patches(xnu_pf_patchset_t* patchset, bool have_union, bool is_ios15, bool is_ios16) {
+void kpf_apfs_patches(xnu_pf_patchset_t* patchset, bool have_union, bool is_ios16) {
     // there is a check in the apfs mount function that makes sure that the kernel task is calling this function (current_task() == kernel_task)
     // we also want to call it so we patch that check out
     // example from i7 13.3:
@@ -2748,7 +2748,7 @@ void command_kpf() {
     kpf_conversion_patch(xnu_text_exec_patchset);
     kpf_mac_mount_patch(xnu_text_exec_patchset);
     kpf_mac_dounmount_patch_0(xnu_text_exec_patchset);
-    kpf_mac_vm_map_protect_patch(xnu_text_exec_patchset);
+    kpf_vm_map_protect_patch(xnu_text_exec_patchset);
     kpf_mac_vm_fault_enter_patch(xnu_text_exec_patchset);
     kpf_nvram_unlock(xnu_text_exec_patchset);
     kpf_find_shellcode_area(xnu_text_exec_patchset);
