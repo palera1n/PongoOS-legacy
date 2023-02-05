@@ -32,11 +32,11 @@ endif
 
 .PHONY: all clean
 
-all: Kernel15Patcher.ios
+all: kpf.ios
 
-Kernel15Patcher.ios: $(CHECKRA1N_C)
+kpf.ios: $(CHECKRA1N_C)
 	$(IOS_CC) -o $@ $(CHECKRA1N_C) $(CHECKRA1N_FLAGS)
 	$(SIGN) $@
 
 clean:
-	rm -f Kernel15Patcher.ios
+	rm -f kpf.ios
